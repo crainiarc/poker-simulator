@@ -1,2 +1,1 @@
-cs4246-project
-==============
+# CS4246 Project
