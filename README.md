@@ -1,1 +1,1 @@
-# CS4246 Project
+# Poker AI Planner
