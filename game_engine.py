@@ -1,5 +1,6 @@
 import sys
 from argparse import ArgumentParser
+from importlib import import_module
 from random import shuffle
 
 cards = 'D2D3D4D5D6D7D8D9DTDJDQDKDA'
@@ -21,4 +22,6 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    agents = args.agents
+
+    # Instantiate all the agent classes
+    agents = [getattr(import_module('agents.' + a), a.title())() for a in args.agents]
