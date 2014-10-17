@@ -15,15 +15,19 @@ def shuffle_deck():
     return [cards[c*2:c*2+2] for c in deck]
 
 def deal_cards(agent, param, bet_hist):
+    """Calls the deal methods for the agent, with the relevant parameters"""
     return agent.deal(param, bet_hist)
 
 def flop_round(agents, param, bet_hist):
+    """Calls the flop methods for the agent, with the relevant parameters"""
     return agent.flop(param, bet_hist)
 
 def turn_round(agents, param, bet_hist):
+    """Calls the turn methods for the agent, with the relevant parameters"""
     return agent.turn(param, bet_hist)
 
 def river_round(agents, param, bet_hist):
+    """Calls the river methods for the agent, with the relevant parameters"""
     return agent.river(param, bet_hist)
 
 def betting_round(agents, chips, method, params):
