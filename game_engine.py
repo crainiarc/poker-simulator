@@ -18,36 +18,36 @@ def deal_cards(agent, param, bet_hist):
     """Calls the deal methods for the agent, with the relevant parameters"""
     return agent.deal(param, bet_hist)
 
-def flop_round(agents, param, bet_hist):
+def flop_round(agent, param, bet_hist):
     """Calls the flop methods for the agent, with the relevant parameters"""
     return agent.flop(param, bet_hist)
 
-def turn_round(agents, param, bet_hist):
+def turn_round(agent, param, bet_hist):
     """Calls the turn methods for the agent, with the relevant parameters"""
     return agent.turn(param, bet_hist)
 
-def river_round(agents, param, bet_hist):
+def river_round(agent, param, bet_hist):
     """Calls the river methods for the agent, with the relevant parameters"""
     return agent.river(param, bet_hist)
 
-def betting_round(agents, chips, method, params):
+def betting_round(agent, chips, bet_history, method, params):
     """Simulates the betting round"""
-    bet_history = []
+    bet_history += [[]]
     in_play = [True] * len(agents)
     in_play_count = len(agents)
 
-    bet_history = [normalize_bet(chips[0], method(agent[0], param[0], bet_history), 0)]
-    check = True if bet_history[0] == 0 else False
-    max_bet = max(0, bet_history[0])
+    bet_history[-1] = [normalize_bet(chips[0], method(agents[0], params[0], bet_history[-1]), 0)]
+    check = True if bet_history[-1][0] == 0 else False
+    max_bet = max(0, bet_history[-1][0])
 
     raised_player = 0
     i = (raised_player + 1) % len(agents)
 
     while i != raised_player and in_play_count > 1:
         if in_play[i]:
-            bet = normalize_bet(chips[i], method(agent[i], param[i], bet_history), max_bet)
+            bet = normalize_bet(chips[i], method(agents[i], params[i], bet_history), max_bet)
             chips[i] -= bet
-            bet_history += [bet]
+            bet_history[-1] += [bet]
 
             if bet > max_bet:
                 check = False
@@ -91,28 +91,29 @@ if __name__ == '__main__':
     # Set up the current game
     agents = global_agents[:]
     chips = global_chips[:]
-    shuffle(agents)
-    deck = shuffle_deck()
+    bet_history = []
     pot = 0
 
+    shuffle(agents)
+    deck = shuffle_deck()
     for i in range(0, len(agents)):
         agents[i].new_game(len(agents), i)
 
     hands = [(deck.pop(), deck.pop()) for i in range(0, len(agents))]
-    agents, chips = betting_round(agents, chips, deal_cards, hands)
+    agents, chips = betting_round(agents, chips, bet_history, deal_cards, hands)
     community_cards = []
 
     params = [(deck.pop(), deck.pop(), deck.pop())] * len(agents)
     community_cards.extend(params[0])
-    agents, chips = betting_round(agents, chips, flop_round, params)
+    agents, chips = betting_round(agents, chips, bet_history, flop_round, params)
 
     params = [deck.pop()] * len(agents)
     community_cards += [params[0]]
-    agents, chips = betting_round(agents, chips, turn_round, params)
+    agents, chips = betting_round(agents, chips, bet_history, turn_round, params)
 
     params = [deck.pop()] * len(agents)
     community_cards += [params[0]]
-    agents, chips = betting_round(agents, chips, river_round, params)
+    agents, chips = betting_round(agents, chips, bet_history, river_round, params)
 
     # Evaluate
     evaluate_results()
