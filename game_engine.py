@@ -31,19 +31,44 @@ def river_round(agents, param, bet_hist):
     return agent.river(param, bet_hist)
 
 def betting_round(agents, chips, method, params):
-    return (agents, chips)
+    """Simulates the betting round"""
+    bet_history = []
+    in_play = [True] * len(agents)
+    in_play_count = len(agents)
+    bet_history = [normalize_bet(method(agent[0], param[0], bet_history))]
+    max_bet = max(0, bet_history[0])
+
+    raised_player = 0
+    i = (raised_player + 1) % len(agents)
+
+    while i != raised_player and in_play_count > 1:
+        if inplay[i]:
+            bet = normalize_bet(method(agent[i], param[i], bet_history))
+            chips[i] -= bet
+            bet_history += [bet]
+            
+            if bet > max_bet:
+                raised_player = i
+                max_bet = bet
+
+            if bet == 0:
+                in_play[i] = False
+                in_play_count -= 1
+
+        i = (i + 1) % len(agents)
+
+    agents_left = []
+    chips_left = []
+    for i in range(0, len(agents)):
+        if in_play[i]:
+            agents_left += [agents[i]]
+            chips_left += [chips[i]]
+            
+    return (agents_left, chips_left)
 
 def normalize_bet(chips, bet):
     """Normalize the bet and make sure that the bets are within limits"""
     return bet if bet <= chips and bet >= chips else 0
-
-
-def remove_folded_agents(agents, chips, bet_hist):
-    """Remove agents and their corresponding chips from the lists if their bets are 0"""
-    for i in range(0, len(best_hist)):
-        if bet_hist[i] == 0:
-            agent.pop(i)
-            chips.pop(i)
 
 def parse_args():
     """Parses the arguments given from the command line"""
