@@ -31,7 +31,7 @@ def river_round(agents, param, bet_hist):
     return agent.river(param, bet_hist)
 
 def betting_round(agents, chips, method, params):
-    pass
+    return (agents, chips)
 
 def normalize_bet(chips, bet):
     """Normalize the bet and make sure that the bets are within limits"""
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     # Instantiate all the agent classes
     buy_in = int(args.buyin)
     global_agents = [getattr(import_module('agents.' + a), a.title())(buy_in) for a in args.agents]
-    global_chips = [buy_in] * len(agents)
+    global_chips = [buy_in] * len(global_agents)
 
     # Set up the current game
     agents = global_agents[:]
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     pot = 0
 
     for i in range(0, len(agents)):
-        agents[i] = new_game(len(agents), i)
+        agents[i].new_game(len(agents), i)
 
     params = [(deck.pop(), deck.pop()) for i in range(0, len(agents))]
     agents, chips = betting_round(agents, chips, deal_cards, params)
