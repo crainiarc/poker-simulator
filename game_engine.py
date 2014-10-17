@@ -1,5 +1,5 @@
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, REMAINDER as rem
 from importlib import import_module
 from random import shuffle
 
@@ -17,7 +17,8 @@ def shuffle_deck():
 def parse_args():
     """Parses the arguments given from the command line"""
     parser = ArgumentParser()
-    parser.add_argument('agents', help='List of agents to simulate', nargs='+')
+    parser.add_argument('buyin', help='Amount of buyin chips each agent get at the start')
+    parser.add_argument('agents', help='List of agents to simulate', nargs=rem)
     return parser.parse_args()
 
 if __name__ == '__main__':
