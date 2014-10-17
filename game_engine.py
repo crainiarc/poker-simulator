@@ -35,23 +35,26 @@ def betting_round(agents, chips, method, params):
     bet_history = []
     in_play = [True] * len(agents)
     in_play_count = len(agents)
-    bet_history = [normalize_bet(method(agent[0], param[0], bet_history))]
+
+    bet_history = [normalize_bet(chips[0], method(agent[0], param[0], bet_history), 0)]
+    check = True if bet_history[0] == 0 else False
     max_bet = max(0, bet_history[0])
 
     raised_player = 0
     i = (raised_player + 1) % len(agents)
 
     while i != raised_player and in_play_count > 1:
-        if inplay[i]:
-            bet = normalize_bet(method(agent[i], param[i], bet_history))
+        if in_play[i]:
+            bet = normalize_bet(chips[i], method(agent[i], param[i], bet_history), max_bet)
             chips[i] -= bet
             bet_history += [bet]
-            
+
             if bet > max_bet:
+                check = False
                 raised_player = i
                 max_bet = bet
 
-            if bet == 0:
+            if bet == 0 and not check:
                 in_play[i] = False
                 in_play_count -= 1
 
@@ -60,15 +63,15 @@ def betting_round(agents, chips, method, params):
     agents_left = []
     chips_left = []
     for i in range(0, len(agents)):
-        if in_play[i]:
+        if in_play[i] and not check:
             agents_left += [agents[i]]
             chips_left += [chips[i]]
-            
+
     return (agents_left, chips_left)
 
-def normalize_bet(chips, bet):
+def normalize_bet(chips, bet, curr_bet):
     """Normalize the bet and make sure that the bets are within limits"""
-    return bet if bet <= chips and bet >= chips else 0
+    return bet if bet <= chips and bet >= curr_bet else 0
 
 def parse_args():
     """Parses the arguments given from the command line"""
