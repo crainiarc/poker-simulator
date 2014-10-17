@@ -95,16 +95,21 @@ if __name__ == '__main__':
     for i in range(0, len(agents)):
         agents[i].new_game(len(agents), i)
 
-    params = [(deck.pop(), deck.pop()) for i in range(0, len(agents))]
-    agents, chips = betting_round(agents, chips, deal_cards, params)
+    hands = [(deck.pop(), deck.pop()) for i in range(0, len(agents))]
+    agents, chips = betting_round(agents, chips, deal_cards, hands)
+    community_cards = []
 
-    params = [deck.pop(), deck.pop(), deck.pop()] * len(agents)
+    params = [(deck.pop(), deck.pop(), deck.pop())] * len(agents)
+    community_cards.extend(params[0])
     agents, chips = betting_round(agents, chips, flop_round, params)
 
     params = [deck.pop()] * len(agents)
+    community_cards += [params[0]]
     agents, chips = betting_round(agents, chips, turn_round, params)
 
     params = [deck.pop()] * len(agents)
+    community_cards += [params[0]]
     agents, chips = betting_round(agents, chips, river_round, params)
 
     # Evaluate
+    evaluate_results()
