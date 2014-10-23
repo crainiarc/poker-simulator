@@ -2,6 +2,7 @@ import sys
 from argparse import ArgumentParser, REMAINDER as rem
 from importlib import import_module
 from random import shuffle
+from deuces import Card, Evaluator, Deck
 
 cards = 'D2D3D4D5D6D7D8D9DTDJDQDKDA'
 cards += 'C2C3C4C5C6C7C8C9CTCJCQCKCA'
@@ -110,7 +111,26 @@ class GameEngine:
         self.betting_round(self.river_round, params)
 
     def evaluate_hands(self):
-        pass
+        evaluator = Evaluator()
+        board = []
+        scores = []
+        hand_types = []
+        for c in self.community_cards:
+            card = c[1] + c[0].lower()
+            board.append(Card.new(card))
+        for agent in self.agents:
+            agent_hand = []
+            for c in agent.hand:
+                card = c[1] + c[0].lower()
+                agent_hand.append(Card.new(card))
+            agent_score = evaluator.evaluate(board, agent_hand)
+            agent_hand_type = evaluator.class_to_string(evaluator.get_rank_class(agent_score))
+            scores.append(agent_score)
+            hand_types.append(agent_hand_type)
+            # print Card.print_pretty_cards(agent_hand)
+        # print Card.print_pretty_cards(board)
+        # print scores
+        # print hand_types
 
 def parse_args():
     """Parses the arguments given from the command line"""
