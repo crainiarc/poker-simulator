@@ -121,8 +121,8 @@ if __name__ == '__main__':
     args = parse_args()
 
     # Instantiate all the agent classes
-    buy_in = int(args.buyin)
-    agents = [getattr(import_module('agents.' + a), a.title())(buy_in) for a in args.agents]
+    buyin = int(args.buyin)
+    agents = [getattr(import_module('agents.' + a), a.title())(buyin) for a in args.agents]
 
     game = GameEngine(agents, buyin)
     game.new_game()
