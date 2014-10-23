@@ -97,18 +97,26 @@ class GameEngine:
         self.hands = [(self.deck.pop(), self.deck.pop()) for i in range(0, len(self.agents))]
         self.betting_round(self.deal_cards, self.hands)
         self.community_cards = []
+        if self.in_game_count <= 1:
+            return
 
         params = [(self.deck.pop(), self.deck.pop(), self.deck.pop())] * len(self.agents)
         self.community_cards.extend(params[0])
         self.betting_round(self.flop_round, params)
+        if self.in_game_count <= 1:
+            return
 
         params = [self.deck.pop()] * len(self.agents)
         self.community_cards += [params[0]]
         self.betting_round(self.turn_round, params)
+        if self.in_game_count <= 1:
+            return
 
         params = [self.deck.pop()] * len(self.agents)
         self.community_cards += [params[0]]
         self.betting_round(self.river_round, params)
+        if self.in_game_count <= 1:
+            return
 
     def evaluate_hands(self):
         evaluator = Evaluator()
