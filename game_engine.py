@@ -19,6 +19,7 @@ class GameEngine:
 
     def new_game(self):
         """Sets  up a new game for the players"""
+        self.bet_history = []
         self.in_game = [True] * len(self.agents)
         self.in_game_count = len(self.agents)
         self.bet_hist = []
