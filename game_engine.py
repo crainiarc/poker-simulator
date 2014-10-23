@@ -67,8 +67,8 @@ class GameEngine:
 
         bet = [self.normalize_bet(self.chips[0], method(self.agents[0], params[0]), 0)]
         check = True if bet == 0 else False
-        max_bet = max(0, bet)
-        self.pot -= bet
+        max_bet = max(0, bet[0])
+        self.pot -= bet[0]
         self.bet_history[-1] += [bet]
 
         raised_player = 0
