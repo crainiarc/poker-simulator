@@ -13,7 +13,8 @@ small_blind = 50
 
 class GameEngine:
     def __init__(self, agents, buyin):
-        self.agents = shuffle(agents);
+        self.agents = agents[:]
+        shuffle(self.agents);
         self.chips = [buyin] * len(agents)
 
     def new_game(self):
@@ -55,7 +56,7 @@ class GameEngine:
         """Calls the river methods for the agent, with the relevant parameters"""
         return agent.river(param, self.bet_hist, self.pot)
 
-    def normalize_bet(chips, bet, curr_bet):
+    def normalize_bet(self, chips, bet, curr_bet):
         """Normalize the bet and make sure that the bets are within limits"""
         return bet if bet <= chips and bet >= curr_bet else 0
 
@@ -63,7 +64,7 @@ class GameEngine:
         """Simulates the betting round"""
         self.bet_history += [[]]
 
-        bet = [normalize_bet(chips[0], method(self.agents[0], params[0]), 0)]
+        bet = [self.normalize_bet(self.chips[0], method(self.agents[0], params[0]), 0)]
         check = True if bet == 0 else False
         max_bet = max(0, bet)
         self.pot -= bet
@@ -74,8 +75,8 @@ class GameEngine:
 
         while i != raised_player and self.in_game_count > 1:
             if self.in_game[i]:
-                bet = normalize_bet(chips[i], method(self.agents[i], params[i]), max_bet)
-                chips[i] -= bet
+                bet = self.normalize_bet(self.chips[i], method(self.agents[i], params[i]), max_bet)
+                self.chips[i] -= bet
                 self.pot -= bet
                 self.bet_history[-1] += [bet]
 
@@ -92,20 +93,20 @@ class GameEngine:
 
     def run_game(self):
         self.hands = [(self.deck.pop(), self.deck.pop()) for i in range(0, len(self.agents))]
-        betting_round(self.deal_cards, self.hands)
+        self.betting_round(self.deal_cards, self.hands)
         self.community_cards = []
 
         params = [(self.deck.pop(), self.deck.pop(), self.deck.pop())] * len(self.agents)
         self.community_cards.extend(params[0])
-        betting_round(self.flop_round, params)
+        self.betting_round(self.flop_round, params)
 
         params = [self.deck.pop()] * len(self.agents)
         self.community_cards += [params[0]]
-        betting_round(self.turn_round, params)
+        self.betting_round(self.turn_round, params)
 
         params = [self.deck.pop()] * len(self.agents)
         self.community_cards += [params[0]]
-        betting_round(self.river_round, params)
+        self.betting_round(self.river_round, params)
 
     def evaluate_hands(self):
         pass
