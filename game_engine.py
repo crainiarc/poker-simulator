@@ -119,26 +119,27 @@ class GameEngine:
             return
 
     def evaluate_hands(self):
-        evaluator = Evaluator()
-        board = []
-        scores = []
-        hand_types = []
-        for c in self.community_cards:
-            card = c[1] + c[0].lower()
-            board.append(Card.new(card))
-        for agent in self.agents:
-            agent_hand = []
-            for c in agent.hand:
+        if self.in_game_count > 1:
+            evaluator = Evaluator()
+            board = []
+            scores = []
+            hand_types = []
+            for c in self.community_cards:
                 card = c[1] + c[0].lower()
-                agent_hand.append(Card.new(card))
-            agent_score = evaluator.evaluate(board, agent_hand)
-            agent_hand_type = evaluator.class_to_string(evaluator.get_rank_class(agent_score))
-            scores.append(agent_score)
-            hand_types.append(agent_hand_type)
-            # print Card.print_pretty_cards(agent_hand)
-        # print Card.print_pretty_cards(board)
-        # print scores
-        # print hand_types
+                board.append(Card.new(card))
+            for agent in self.agents:
+                agent_hand = []
+                for c in agent.hand:
+                    card = c[1] + c[0].lower()
+                    agent_hand.append(Card.new(card))
+                agent_score = evaluator.evaluate(board, agent_hand)
+                agent_hand_type = evaluator.class_to_string(evaluator.get_rank_class(agent_score))
+                scores.append(agent_score)
+                hand_types.append(agent_hand_type)
+                # print Card.print_pretty_cards(agent_hand)
+            # print Card.print_pretty_cards(board)
+            # print scores
+            # print hand_types
 
 def parse_args():
     """Parses the arguments given from the command line"""
