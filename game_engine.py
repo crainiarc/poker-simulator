@@ -146,7 +146,7 @@ class GameEngine:
                     agent_hand.append(Card.new(c))
 
                 if self.in_game[i]:
-                    agent_hands.append(agent_hand)
+                    agent_hands.append(agent.hand)
                     agent_score = evaluator.evaluate(board, agent_hand)
                     agent_hand_type = evaluator.class_to_string(evaluator.get_rank_class(agent_score))
                     scores.append(agent_score)
