@@ -6,9 +6,10 @@ class Human:
         self.flop_cards = None
         self.turn_cards = None
         self.river_cards = None
+        self.position = -1
 
     def new_game(self, num_players, position):
-        pass
+        self.position = position
     
     def deal(self, hand, bet_hist, pot):
         self.hand = hand
@@ -35,5 +36,15 @@ class Human:
 
         return int(input(str(self.hand) + ' River - ' + str(self.community_cards) + ' :'))
 
-    def end_game(self, bet_history, winner, hand):
-        pass
+    def end_game(self, bet_history, winner, hand, pot):
+        result = ""
+        if (winner == self.position):
+            result += "You Win | "
+        else:
+            result += "You Lose | "
+        result = result + "Pot size: " + str(pot) + " | "
+        if (hand == []):
+            result = result + "Winning hand: Not revealed"
+        else:
+            result = result + "Winning hand: " + str(hand[winner])
+        print result

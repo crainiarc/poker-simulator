@@ -177,10 +177,10 @@ class GameEngine:
 
     def perform_end_game(self, winner, hand):
         self.chips[winner] += self.pot
-        self.pot = 0
-        
         for agent in self.agents:
-            agent.end_game(self.bet_history, winner, hand)
+            agent.end_game(self.bet_history, winner, hand, self.pot)
+
+        self.pot = 0
 
 def parse_args():
     """Parses the arguments given from the command line"""
