@@ -4,10 +4,10 @@ from importlib import import_module
 from random import shuffle
 from deuces import Card, Evaluator, Deck
 
-cards = 'D2D3D4D5D6D7D8D9DTDJDQDKDA'
-cards += 'C2C3C4C5C6C7C8C9CTCJCQCKCA'
-cards += 'H2H3H4H5H6H7H8H9HTHJHQHKHA'
-cards += 'S2S3S4S5S6S7S8S9STSJSQSKSA'
+cards = '2d3d4d5d6d7d8d9dTdJdQdKdAd'
+cards += '2c3c4c5c6c7c8c9cTcJcQcKcAc'
+cards += '2h3h4h5h6h7h8h9hThJhQhKhAh'
+cards += '2s3s4s5s6s7s8s9sTsJsQsKsAs'
 
 big_blind = 100
 small_blind = 50
@@ -27,6 +27,7 @@ class GameEngine:
         self.pot = big_blind + small_blind
         self.chips[-2] -= big_blind
         self.chips[-1] -= small_blind
+        self.all_in = [False] * len(self.agents)
 
         self.hands = None
         self.community_cards = []
@@ -60,26 +61,35 @@ class GameEngine:
 
     def normalize_bet(self, chips, bet, curr_bet):
         """Normalize the bet and make sure that the bets are within limits"""
-        return bet if bet <= chips and bet >= curr_bet else 0
+        bet if bet <= chips and bet >= curr_bet else 0
+        all_in = (bet == chips)
+        return (all_in, bet)
 
     def betting_round(self, method, params):
         """Simulates the betting round"""
         self.bet_history += [[]]
-
-        bet = [self.normalize_bet(self.chips[0], method(self.agents[0], params[0]), 0)]
-        check = True if bet[0] == 0 else False
-        max_bet = max(0, bet[0])
-        self.pot -= bet[0]
+        current_bets = [0] * len(self.agents)
+        
+        (self.all_in[0], bet) = self.normalize_bet(self.chips[0], method(self.agents[0], params[0]), 0)
+        self.in_game[0] = (not self.all_in[0])
+        current_bets[0] = bet
+        self.chips[0] -= bet
+        check = True if bet == 0 else False
+        max_bet = max(0, bet)
+        self.pot += bet
         self.bet_history[-1] += [bet]
 
         raised_player = 0
         i = (raised_player + 1) % len(agents)
 
-        while i != raised_player and self.in_game_count > 1:
+        while (i != raised_player) and (not self.all_in[i]) and (current_bets[i] <= max_bet):
             if self.in_game[i]:
-                bet = self.normalize_bet(self.chips[i], method(self.agents[i], params[i]), max_bet)
-                self.chips[i] -= bet
-                self.pot -= bet
+                (self.all_in[i], bet) = self.normalize_bet(self.chips[i], method(self.agents[i], params[i]), max_bet)
+                self.in_game[i] = (not self.all_in[i])
+                delta_bet = bet - current_bets[i]
+                current_bets[i] = bet
+                self.chips[i] -= delta_bet
+                self.pot += delta_bet
                 self.bet_history[-1] += [bet]
 
                 if bet > max_bet:
@@ -124,22 +134,53 @@ class GameEngine:
             board = []
             scores = []
             hand_types = []
+            agent_hands = []
+
             for c in self.community_cards:
-                card = c[1] + c[0].lower()
-                board.append(Card.new(card))
-            for agent in self.agents:
+                board.append(Card.new(c))
+            for i in range(0, len(self.agents)):
+                agent = self.agents[i]
                 agent_hand = []
+
                 for c in agent.hand:
-                    card = c[1] + c[0].lower()
-                    agent_hand.append(Card.new(card))
-                agent_score = evaluator.evaluate(board, agent_hand)
-                agent_hand_type = evaluator.class_to_string(evaluator.get_rank_class(agent_score))
-                scores.append(agent_score)
-                hand_types.append(agent_hand_type)
+                    agent_hand.append(Card.new(c))
+
+                if self.in_game[i]:
+                    agent_hands.append(agent_hand)
+                    agent_score = evaluator.evaluate(board, agent_hand)
+                    agent_hand_type = evaluator.class_to_string(evaluator.get_rank_class(agent_score))
+                    scores.append(agent_score)
+                    hand_types.append(agent_hand_type)
+                else:
+                    agent_hands += [None]
+                    scores.append(9999999999999)
+            
+            lowest_rank = scores[0]
+            winner = 0
+            for i in range(0, len(self.agents)):
+                if lowest_rank > scores[i]:
+                    lowest_rank = scores[i]
+                    winner = i
+                    
+            return (winner, agent_hands)
+        else: # Only 1 remaining player
+            winner = 0
+            for i in range(0, self.agents):
+                if (self.in_game[i]):
+                    winner = i
+                    break
+            return winner, agent_hands
                 # print Card.print_pretty_cards(agent_hand)
             # print Card.print_pretty_cards(board)
             # print scores
             # print hand_types
+
+    def perform_end_game(self, winner, hand):
+        self.chips[winner] += self.pot
+        self.pot = 0
+        
+        for agent in self.agents:
+            agent.end_game(self.bet_history, winner, hand)
 
 def parse_args():
     """Parses the arguments given from the command line"""
@@ -158,4 +199,5 @@ if __name__ == '__main__':
     game = GameEngine(agents, buyin)
     game.new_game()
     game.run_game()
-    game.evaluate_hands()
+    winner, hand = game.evaluate_hands()
+    game.perform_end_game(winner, hand)

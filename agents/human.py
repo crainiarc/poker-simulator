@@ -35,5 +35,5 @@ class Human:
 
         return int(input(str(self.hand) + ' River - ' + str(self.community_cards) + ' :'))
 
-    def end_game(self, results):
+    def end_game(self, bet_history, winner, hand):
         pass
