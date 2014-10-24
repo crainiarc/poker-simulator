@@ -70,12 +70,13 @@ class GameEngine:
         self.bet_history += [[]]
         current_bets = [0] * len(self.agents)
         
-        (self.all_in[0], bet) = self.normalize_bet(self.chips[0], method(self.agents[0], params[0]), 0)
+        max_bet = big_blind - small_blind
+        (self.all_in[0], bet) = self.normalize_bet(self.chips[0], method(self.agents[0], params[0]), max_bet)
         self.in_game[0] = (not self.all_in[0])
         current_bets[0] = bet
         self.chips[0] -= bet
         check = True if bet == 0 else False
-        max_bet = max(0, bet)
+        max_bet = max(max_bet, bet)
         self.pot += bet
         self.bet_history[-1] += [bet]
 
