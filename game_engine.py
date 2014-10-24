@@ -17,6 +17,7 @@ class GameEngine:
         self.agents = agents[:]
         shuffle(self.agents);
         self.chips = [buyin] * len(agents)
+        self.starting_player = 0
 
     def new_game(self):
         """Sets  up a new game for the players"""
@@ -25,8 +26,8 @@ class GameEngine:
         self.in_game_count = len(self.agents)
         self.bet_hist = []
         self.pot = big_blind + small_blind
-        self.chips[-2] -= big_blind
-        self.chips[-1] -= small_blind
+        self.chips[self.starting_player] -= small_blind
+        self.chips[(self.starting_player + 1) % len(self.agents)] -= big_blind
         self.all_in = [False] * len(self.agents)
 
         self.hands = None
@@ -45,7 +46,7 @@ class GameEngine:
 
     def deal_cards(self, agent, param):
         """Calls the deal methods for the agent, with the relevant parameters"""
-        return agent.deal(param, self.bet_hist, self.pot)
+        return agent.deal(param, big_blind, small_blind, self.bet_hist, self.pot)
 
     def flop_round(self, agent, param):
         """Calls the flop methods for the agent, with the relevant parameters"""
@@ -68,20 +69,36 @@ class GameEngine:
     def betting_round(self, method, params):
         """Simulates the betting round"""
         self.bet_history += [[]]
-        current_bets = [0] * len(self.agents)
+        current_bets = [self.starting_player] * len(self.agents)
         
-        max_bet = big_blind - small_blind
-        (self.all_in[0], bet) = self.normalize_bet(self.chips[0], method(self.agents[0], params[0]), max_bet)
-        self.in_game[0] = (not self.all_in[0])
-        current_bets[0] = bet
-        self.chips[0] -= bet
+        max_bet = 0
+        if method == self.deal_cards:
+            max_bet = big_blind
+            current_bets[self.starting_player] = small_blind
+            current_bets[(self.starting_player + 1) % len(self.agents)] = big_blind
+
+        (self.all_in[self.starting_player], bet) = self.normalize_bet(self.chips[self.starting_player], method(self.agents[self.starting_player], params[self.starting_player]), max_bet)
+        self.in_game[self.starting_player] = (not self.all_in[self.starting_player])
+        current_bets[self.starting_player] = bet
+        self.chips[self.starting_player] -= bet
         check = True if bet == 0 else False
         max_bet = max(max_bet, bet)
         self.pot += bet
         self.bet_history[-1] += [bet]
 
-        raised_player = 0
-        i = (raised_player + 1) % len(agents)
+        raised_player = self.starting_player
+        i = (raised_player + 1) % len(self.agents)
+
+        if method == self.deal_cards:
+            # raised_player = (self.starting_player + 1) % len(agents)
+            check = False
+            if bet > max_bet:
+                raised_player = i
+                max_bet = bet
+
+            if bet == 0:
+                self.in_game[i] = False
+                self.in_game_count -= 1
 
         while (i != raised_player) and (not self.all_in[i]) and (current_bets[i] <= max_bet):
             if self.in_game[i]:
