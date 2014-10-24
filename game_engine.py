@@ -61,7 +61,7 @@ class GameEngine:
 
     def normalize_bet(self, chips, bet, curr_bet):
         """Normalize the bet and make sure that the bets are within limits"""
-        bet if bet <= chips and bet >= curr_bet else 0
+        bet = bet if bet <= chips and bet >= curr_bet else 0
         all_in = (bet == chips)
         return (all_in, bet)
 
@@ -86,7 +86,7 @@ class GameEngine:
             if self.in_game[i]:
                 (self.all_in[i], bet) = self.normalize_bet(self.chips[i], method(self.agents[i], params[i]), max_bet)
                 self.in_game[i] = (not self.all_in[i])
-                delta_bet = bet - current_bets[i]
+                delta_bet = max(0, bet - current_bets[i])
                 current_bets[i] = bet
                 self.chips[i] -= delta_bet
                 self.pot += delta_bet
@@ -129,12 +129,12 @@ class GameEngine:
             return
 
     def evaluate_hands(self):
+        agent_hands = []
         if self.in_game_count > 1:
             evaluator = Evaluator()
             board = []
             scores = []
             hand_types = []
-            agent_hands = []
 
             for c in self.community_cards:
                 board.append(Card.new(c))
@@ -165,7 +165,7 @@ class GameEngine:
             return (winner, agent_hands)
         else: # Only 1 remaining player
             winner = 0
-            for i in range(0, self.agents):
+            for i in range(0, len(self.agents)):
                 if (self.in_game[i]):
                     winner = i
                     break
